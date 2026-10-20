@@ -1,0 +1,47 @@
+En este caso lo que pasa es debido a la concurrencia y al controlador de procesos, el cual le puede asignar un
+mayor tiempo a un hilo que a otro, en el caso de que se lo de al getter este repetiría varias veces el mismo valor
+de la variable, debido a que el setter no podría acceder a la variable, en cambio si le diera más tiempo al setter
+lo que pasaría es que el hilo setter podría modificar varias veces la variable y que el getter no imprimiera esos valores
+porque no podría acceder para imprimirlo.
+
+
+¿Cómo solucionarlo?
+Debemos de proteger la región crítica que es la que modifica la variable, en este caso lo mejor sería
+modificar el setter y el getter en la variable compartida sincronizandolas y también poner un sleep en el método
+run de la hebra set.
+
+//Clase VariableCompartida Corregida
+public class VariableCompartida {
+    private int variableV=0;
+
+    public synchronized int getVariableV() {
+        return variableV;
+    }
+
+    public synchronized void setVariableV(int variableV) {
+        this.variableV = variableV;
+    }
+}
+
+//Clase HebraSet Corregida
+ public HebraSet(VariableCompartida c1) {
+        this.c1 = c1;
+    }
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            //Coje la variable compartida que hay en hebra y pilla el set de la Clase Variable compartida y le cambia el valor
+            c1.setVariableV(i);
+            System.out.println("SET:"+c1.getVariableV());
+   try {
+                  Thread.sleep(1000);
+              } catch (InterruptedException e) {
+                  throw new RuntimeException(e);
+              }
+
+
+    }
+}
+
+
+
